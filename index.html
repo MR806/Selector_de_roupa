@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meu Look Diário • Guarda-Roupa Inteligente</title>
+  <meta name="description" content="Gerador inteligente de looks minimalistas, cápsula e smart casual com gerenciador de ciclo de lavagem." />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fafaf9',
+              100: '#f5f5f4',
+              200: '#e7e5e4',
+              300: '#d6d3d1',
+              400: '#a8a29e',
+              500: '#78716c',
+              600: '#57534e',
+              700: '#44403c',
+              800: '#292524',
+              900: '#1c1917',
+              950: '#0c0a09',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-stone-100 text-stone-900 min-h-screen flex flex-col antialiased selection:bg-neutral-900 selection:text-white">
+
+  <!-- Header Superior -->
+  <header class="sticky top-0 z-40 bg-neutral-950 text-stone-100 border-b border-neutral-800 backdrop-blur-md bg-opacity-95 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
+      
+      <!-- Logo & Subtitle -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-stone-100 text-neutral-950 flex items-center justify-center font-bold text-lg shadow-sm">
+          <i class="fa-solid fa-vest-patches"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight uppercase">Meu Look Diário</h1>
+            <span class="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-neutral-800 text-stone-300 border border-neutral-700">Cápsula v2.0</span>
+          </div>
+          <p class="text-xs text-stone-400 font-light hidden sm:block">Estilo Minimalista & Smart Casual</p>
+        </div>
+      </div>
+
+      <!-- Quick Metrics & Actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Status de Disponibilidade -->
+        <div class="hidden md:flex items-center gap-2 bg-neutral-900 px-3 py-1.5 rounded-lg border border-neutral-800 text-xs">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-stone-300" id="headerStatusCount">18 peças (18 limpas)</span>
+        </div>
+
+        <!-- Lavar / Renovar Ciclo -->
+        <button id="headerResetCycleBtn" title="Renovar ciclo e marcar todas as roupas como limpas" class="bg-stone-200 hover:bg-white text-neutral-950 font-medium px-3.5 py-1.5 rounded-lg text-xs sm:text-sm transition flex items-center gap-2 shadow-sm active:scale-95">
+          <i class="fa-solid fa-rotate"></i>
+          <span class="hidden sm:inline">Lavar Roupas / Novo Ciclo</span>
+          <span class="sm:hidden">Lavar Tudo</span>
+        </button>
+
+        <!-- Dropdown / More Actions -->
+        <div class="relative">
+          <button id="moreActionsMenuBtn" class="w-9 h-9 flex items-center justify-center rounded-lg bg-neutral-900 hover:bg-neutral-800 text-stone-300 border border-neutral-800 transition">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+          </button>
+          
+          <div id="moreActionsDropdown" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-stone-200 py-1.5 z-50 text-stone-800 text-xs font-medium">
+            <button id="exportBackupBtn" class="w-full text-left px-4 py-2 hover:bg-stone-100 flex items-center gap-2.5">
+              <i class="fa-solid fa-download text-stone-500"></i>
+              <span>Exportar Backup (JSON)</span>
+            </button>
+            <label class="w-full text-left px-4 py-2 hover:bg-stone-100 flex items-center gap-2.5 cursor-pointer">
+              <i class="fa-solid fa-upload text-stone-500"></i>
+              <span>Importar Backup</span>
+              <input type="file" id="importBackupInput" accept=".json" class="hidden">
+            </label>
+            <div class="my-1 border-t border-stone-100"></div>
+            <button id="resetDefaultsBtn" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 flex items-center gap-2.5">
+              <i class="fa-solid fa-arrows-rotate text-red-500"></i>
+              <span>Restaurar Cápsula Padrão</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs Bar -->
+    <div class="bg-neutral-900/90 border-t border-neutral-800 px-4">
+      <div class="max-w-7xl mx-auto flex gap-1 sm:gap-2 overflow-x-auto scrollbar-none py-1.5">
+        
+        <button data-tab="suggestions" class="nav-tab active-nav-tab flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-neutral-800/80 transition">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+          <span>Sugestões do Dia</span>
+        </button>
+
+        <button data-tab="wardrobe" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-stone-400 hover:text-stone-200 hover:bg-neutral-800/40 transition">
+          <i class="fa-solid fa-table-cells-large"></i>
+          <span>Meu Guarda-Roupa</span>
+          <span id="wardrobeBadgeCount" class="bg-neutral-800 px-1.5 py-0.5 rounded-full text-[10px] text-stone-300">18</span>
+        </button>
+
+        <button data-tab="studio" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-stone-400 hover:text-stone-200 hover:bg-neutral-800/40 transition">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Montador de Look</span>
+        </button>
+
+        <button data-tab="laundry" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-stone-400 hover:text-stone-200 hover:bg-neutral-800/40 transition">
+          <i class="fa-solid fa-soap"></i>
+          <span>Lavanderia</span>
+          <span id="laundryBadgeCount" class="bg-amber-900/60 text-amber-300 px-1.5 py-0.5 rounded-full text-[10px] hidden">0</span>
+        </button>
+
+        <button data-tab="history" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-stone-400 hover:text-stone-200 hover:bg-neutral-800/40 transition">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>Histórico & Métricas</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Cycle Helper Banner -->
+  <aside class="bg-stone-900 text-stone-300 text-xs py-2 px-4 border-b border-stone-800 flex justify-between items-center">
+    <div class="max-w-7xl mx-auto w-full flex flex-wrap justify-between items-center gap-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-stone-400"></i>
+        <span class="text-[11px] sm:text-xs">Peças usadas vão para a lavagem semanal e evitam repetição excessiva.</span>
+      </div>
+      <div class="text-[11px] text-stone-400 flex items-center gap-3">
+        <span id="currentDateDisplay">Hoje</span>
+        <span class="hidden sm:inline">•</span>
+        <span id="capsuleUtilizationRate" class="hidden sm:inline font-mono">100% disponível</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Container Principal -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- ======================================================== -->
+    <!-- ABA 1: SUGESTÕES DO DIA (SMART STYLIST ENGINE)          -->
+    <!-- ======================================================== -->
+    <section id="tab-suggestions" class="tab-content">
+      
+      <!-- Filtros de Clima & Ocasião para geração -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-neutral-900 uppercase tracking-wide flex items-center gap-2">
+            <span>Combinações Minimalistas de Hoje</span>
+            <span class="text-xs font-normal normal-case text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">Harmonia por IA & Regras de Estilo</span>
+          </h2>
+          <p class="text-xs text-stone-500 mt-1">Selecione o contexto do seu dia para gerar propostas sob medida.</p>
+        </div>
+
+        <!-- Controles Interativos -->
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
+          <!-- Seletor de Clima -->
+          <div class="flex items-center bg-stone-100 rounded-xl p-1 border border-stone-200 text-xs">
+            <span class="px-2 text-stone-500 font-medium hidden sm:inline"><i class="fa-solid fa-cloud-sun mr-1"></i> Clima:</span>
+            <select id="weatherSelect" class="bg-transparent font-semibold text-stone-800 text-xs px-2 py-1 outline-none cursor-pointer">
+              <option value="any">Qualquer Clima</option>
+              <option value="hot">☀️ Calor / Quente</option>
+              <option value="mild">🍃 Ameno / Meia-estação</option>
+              <option value="cold">❄️ Frio / Inverno</option>
+              <option value="rainy">🌧️ Chuvoso</option>
+            </select>
+          </div>
+
+          <!-- Seletor de Ocasião -->
+          <div class="flex items-center bg-stone-100 rounded-xl p-1 border border-stone-200 text-xs">
+            <span class="px-2 text-stone-500 font-medium hidden sm:inline"><i class="fa-solid fa-briefcase mr-1"></i> Ocasião:</span>
+            <select id="occasionSelect" class="bg-transparent font-semibold text-stone-800 text-xs px-2 py-1 outline-none cursor-pointer">
+              <option value="any">Todas Ocasiões</option>
+              <option value="smart_casual">💼 Smart Casual</option>
+              <option value="casual">☕ Casual Diário</option>
+              <option value="formal">🍸 Elegante / Jantar</option>
+            </select>
+          </div>
+
+          <!-- Botão Gerar / Embaralhar -->
+          <button id="generateBtn" class="bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm active:scale-95">
+            <i class="fa-solid fa-shuffle"></i>
+            <span>Gerar Novas Sugestões</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Container de Cards de Looks Sugeridos -->
+      <div id="suggestionsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- ABA 2: MEU GUARDA-ROUPA COMPLETO                        -->
+    <!-- ======================================================== -->
+    <section id="tab-wardrobe" class="tab-content hidden">
+      
+      <!-- Top Bar da Seção do Guarda-Roupa -->
+      <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-neutral-900 uppercase tracking-wide">Acervo do Guarda-Roupa</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Gerencie suas peças, adicione fotos reais e controle o status de lavagem.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <!-- Campo de Busca -->
+          <div class="relative flex-1 sm:w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-xs"></i>
+            <input type="text" id="wardrobeSearchInput" placeholder="Buscar por nome, cor, tipo..." class="w-full bg-stone-50 border border-stone-200 text-xs rounded-xl pl-8 pr-3 py-2 outline-none focus:border-neutral-900 transition">
+          </div>
+
+          <!-- Botão Cadastrar Peça -->
+          <button id="openAddModalBtn" class="bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm active:scale-95">
+            <i class="fa-solid fa-plus"></i>
+            <span>Adicionar Peça</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtros de Categorias com Contadores -->
+      <div class="flex gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none text-xs font-semibold" id="categoryFilterContainer">
+        <!-- Renderizado dinamicamente com contadores -->
+      </div>
+
+      <!-- Grid do Guarda-Roupa -->
+      <div id="wardrobeGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- ABA 3: MONTADOR DE LOOKS (STUDIO / MANIQUIM)            -->
+    <!-- ======================================================== -->
+    <section id="tab-studio" class="tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Painel de Montagem (Visual Preview) -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-stone-100">
+              <div>
+                <h3 class="text-base font-bold text-neutral-900 uppercase tracking-wide">Estúdio de Montagem</h3>
+                <p class="text-xs text-stone-500">Selecione peças individuais e monte sua própria combinação.</p>
+              </div>
+              <button id="studioRandomizeBtn" class="text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 border border-stone-200">
+                <i class="fa-solid fa-dice"></i>
+                <span>Sortear Peças</span>
+              </button>
+            </div>
+
+            <!-- Mannequin / Slot Visualizer -->
+            <div class="space-y-3 my-4">
+              
+              <!-- Slot Sobreposição / Casaco (Opcional) -->
+              <div class="outfit-slot border border-dashed border-stone-300 rounded-xl p-3 bg-stone-50/50 flex items-center justify-between gap-3 cursor-pointer" data-slot="sobreposicao">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-lg bg-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0" id="studio-preview-sobreposicao-img">
+                    <i class="fa-solid fa-vest text-stone-400 text-lg"></i>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold uppercase text-stone-400 tracking-wider">Sobreposição (Opcional)</span>
+                    <h4 class="text-xs font-semibold text-neutral-800" id="studio-preview-sobreposicao-name">Nenhum casaco selecionado</h4>
+                  </div>
+                </div>
+                <button class="text-xs text-stone-400 hover:text-stone-700 p-1" title="Alterar" onclick="app.selectStudioSlot('sobreposicao')">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+
+              <!-- Slot Superior -->
+              <div class="outfit-slot border border-dashed border-stone-300 rounded-xl p-3 bg-stone-50/50 flex items-center justify-between gap-3 cursor-pointer" data-slot="superior">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-lg bg-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0" id="studio-preview-superior-img">
+                    <i class="fa-solid fa-shirt text-stone-400 text-lg"></i>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold uppercase text-stone-400 tracking-wider">Parte Superior *</span>
+                    <h4 class="text-xs font-semibold text-neutral-800" id="studio-preview-superior-name">Selecione uma camiseta / camisa</h4>
+                  </div>
+                </div>
+                <button class="text-xs text-stone-400 hover:text-stone-700 p-1" title="Alterar" onclick="app.selectStudioSlot('superior')">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+
+              <!-- Slot Inferior -->
+              <div class="outfit-slot border border-dashed border-stone-300 rounded-xl p-3 bg-stone-50/50 flex items-center justify-between gap-3 cursor-pointer" data-slot="inferior">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-lg bg-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0" id="studio-preview-inferior-img">
+                    <i class="fa-solid fa-socks text-stone-400 text-lg"></i>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold uppercase text-stone-400 tracking-wider">Parte Inferior *</span>
+                    <h4 class="text-xs font-semibold text-neutral-800" id="studio-preview-inferior-name">Selecione uma calça</h4>
+                  </div>
+                </div>
+                <button class="text-xs text-stone-400 hover:text-stone-700 p-1" title="Alterar" onclick="app.selectStudioSlot('inferior')">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+
+              <!-- Slot Calçado -->
+              <div class="outfit-slot border border-dashed border-stone-300 rounded-xl p-3 bg-stone-50/50 flex items-center justify-between gap-3 cursor-pointer" data-slot="calcado">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-lg bg-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0" id="studio-preview-calcado-img">
+                    <i class="fa-solid fa-shoe-prints text-stone-400 text-lg"></i>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold uppercase text-stone-400 tracking-wider">Calçado *</span>
+                    <h4 class="text-xs font-semibold text-neutral-800" id="studio-preview-calcado-name">Selecione um calçado</h4>
+                  </div>
+                </div>
+                <button class="text-xs text-stone-400 hover:text-stone-700 p-1" title="Alterar" onclick="app.selectStudioSlot('calcado')">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+
+              <!-- Slot Acessório -->
+              <div class="outfit-slot border border-dashed border-stone-300 rounded-xl p-3 bg-stone-50/50 flex items-center justify-between gap-3 cursor-pointer" data-slot="acessorio">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-lg bg-stone-200 overflow-hidden flex items-center justify-center flex-shrink-0" id="studio-preview-acessorio-img">
+                    <i class="fa-solid fa-glasses text-stone-400 text-lg"></i>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold uppercase text-stone-400 tracking-wider">Acessório (Opcional)</span>
+                    <h4 class="text-xs font-semibold text-neutral-800" id="studio-preview-acessorio-name">Nenhum acessório</h4>
+                  </div>
+                </div>
+                <button class="text-xs text-stone-400 hover:text-stone-700 p-1" title="Alterar" onclick="app.selectStudioSlot('acessorio')">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Ações do Studio -->
+          <div class="pt-4 border-t border-stone-100 flex gap-3">
+            <button id="studioWearBtn" class="flex-1 bg-neutral-900 hover:bg-neutral-800 text-white font-semibold py-3 rounded-xl text-xs sm:text-sm transition shadow-sm flex items-center justify-center gap-2 active:scale-95">
+              <i class="fa-solid fa-check"></i>
+              <span>Vestir Este Look Customizado</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Seletor Lateral de Peças para o Slot Ativo -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col">
+          <div class="flex justify-between items-center mb-4 pb-2 border-b border-stone-100">
+            <div>
+              <h3 class="text-sm font-bold text-neutral-900 uppercase" id="studioSelectorTitle">Escolher: Peça Superior</h3>
+              <p class="text-xs text-stone-500">Clique em uma peça para adicioná-la à composição</p>
+            </div>
+            <span class="text-xs text-stone-400" id="studioAvailableCount">0 disponíveis</span>
+          </div>
+
+          <div id="studioItemsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto max-h-[520px] pr-1 flex-1">
+            <!-- Renderizado dinamicamente via JS -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- ABA 4: LAVANDERIA & CONTROLE DE CICLO                   -->
+    <!-- ======================================================== -->
+    <section id="tab-laundry" class="tab-content hidden">
+      <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-neutral-900 uppercase tracking-wide flex items-center gap-2">
+            <i class="fa-solid fa-soap text-stone-700"></i>
+            <span>Cesto de Lavagem Semanal</span>
+          </h2>
+          <p class="text-xs text-stone-500 mt-1">Peças aqui não aparecerão nas sugestões automáticas até que você as lave.</p>
+        </div>
+
+        <button id="laundryWashAllBtn" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm active:scale-95">
+          <i class="fa-solid fa-sparkles"></i>
+          <span>Lavar Todas as Peças</span>
+        </button>
+      </div>
+
+      <div id="laundryItemsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- ABA 5: HISTÓRICO & ESTATÍSTICAS DA CÁPSULA              -->
+    <!-- ======================================================== -->
+    <section id="tab-history" class="tab-content hidden">
+      
+      <!-- Cards de Métricas e Uso da Cápsula -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+          <div class="flex items-center justify-between text-stone-400 mb-2">
+            <span class="text-xs font-semibold uppercase">Total de Peças</span>
+            <i class="fa-solid fa-shirt"></i>
+          </div>
+          <div class="text-2xl font-bold text-neutral-900" id="statTotalItems">0</div>
+          <p class="text-[11px] text-stone-500 mt-1">Guarda-roupa enxuto</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+          <div class="flex items-center justify-between text-stone-400 mb-2">
+            <span class="text-xs font-semibold uppercase">Disponibilidade</span>
+            <i class="fa-solid fa-check-double text-emerald-600"></i>
+          </div>
+          <div class="text-2xl font-bold text-emerald-600" id="statAvailablePercentage">100%</div>
+          <p class="text-[11px] text-stone-500 mt-1" id="statAvailableItems">0 peças prontas para uso</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+          <div class="flex items-center justify-between text-stone-400 mb-2">
+            <span class="text-xs font-semibold uppercase">Na Lavagem</span>
+            <i class="fa-solid fa-soap text-amber-500"></i>
+          </div>
+          <div class="text-2xl font-bold text-amber-600" id="statLaundryItems">0</div>
+          <p class="text-[11px] text-stone-500 mt-1">Aguardando ciclo</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+          <div class="flex items-center justify-between text-stone-400 mb-2">
+            <span class="text-xs font-semibold uppercase">Looks Registrados</span>
+            <i class="fa-solid fa-calendar-check text-stone-700"></i>
+          </div>
+          <div class="text-2xl font-bold text-neutral-900" id="statTotalOutfitsWorn">0</div>
+          <p class="text-[11px] text-stone-500 mt-1">Histórico de combinações</p>
+        </div>
+
+      </div>
+
+      <!-- Lista Cronológica de Looks Usados -->
+      <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+        <h3 class="text-base font-bold text-neutral-900 uppercase tracking-wide mb-4 pb-2 border-b border-stone-100 flex items-center justify-between">
+          <span>Histórico Cronológico de Looks</span>
+          <span class="text-xs font-normal text-stone-500" id="historyCountText">0 registros</span>
+        </h3>
+
+        <div id="historyListContainer" class="space-y-4">
+          <!-- Renderizado dinamicamente via JS -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CADASTRAR OU EDITAR PEÇA DE ROUPA                -->
+  <!-- ======================================================== -->
+  <div id="addModal" class="fixed inset-0 bg-neutral-950/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50 modal-backdrop">
+    <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-stone-200 max-h-[90vh] overflow-y-auto modal-content-anim">
+      
+      <div class="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
+        <div>
+          <h3 class="text-base font-bold text-neutral-900 uppercase tracking-wide" id="modalTitle">Cadastrar Peça de Roupa</h3>
+          <p class="text-xs text-stone-500">Adicione uma peça ao seu guarda-roupa minimalista</p>
+        </div>
+        <button id="closeAddModalBtn" class="text-stone-400 hover:text-stone-700 w-8 h-8 rounded-full flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="addItemForm" class="space-y-4">
+        <input type="hidden" id="editItemId" value="">
+
+        <!-- Nome da Peça -->
+        <div>
+          <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Nome da Peça *</label>
+          <input type="text" id="itemName" required placeholder="Ex: Camiseta Tricô Azul Marinho" class="w-full text-xs sm:text-sm border border-stone-300 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-neutral-900 transition">
+        </div>
+
+        <!-- Categoria & Tom -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Categoria *</label>
+            <select id="itemCategory" required class="w-full text-xs sm:text-sm border border-stone-300 rounded-xl px-3 py-2.5 focus:outline-none focus:border-neutral-900 bg-white transition">
+              <option value="superior">👕 Superior (Camiseta / Camisa)</option>
+              <option value="sobreposicao">🧥 Sobreposição (Casaco / Blazer)</option>
+              <option value="inferior">👖 Inferior (Calça / Chino)</option>
+              <option value="calcado">👞 Calçado (Tênis / Loafer)</option>
+              <option value="acessorio">🕶️ Acessório (Relógio / Óculos)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Tom de Cor *</label>
+            <select id="itemColorTone" required class="w-full text-xs sm:text-sm border border-stone-300 rounded-xl px-3 py-2.5 focus:outline-none focus:border-neutral-900 bg-white transition">
+              <option value="dark">🌑 Escuro (Preto, Marinho, Chumbo)</option>
+              <option value="light">⚪ Claro (Branco, Off-White, Bege Claro)</option>
+              <option value="neutral">🍂 Neutro / Terra (Oliva, Khaki, Cinza)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Clima Adequado -->
+        <div>
+          <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Climas Adequados</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <label class="flex items-center gap-2 p-2 border border-stone-200 rounded-lg cursor-pointer hover:bg-stone-50">
+              <input type="checkbox" name="itemWeather" value="hot" checked class="rounded accent-neutral-900">
+              <span>☀️ Calor</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 border border-stone-200 rounded-lg cursor-pointer hover:bg-stone-50">
+              <input type="checkbox" name="itemWeather" value="mild" checked class="rounded accent-neutral-900">
+              <span>🍃 Ameno</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 border border-stone-200 rounded-lg cursor-pointer hover:bg-stone-50">
+              <input type="checkbox" name="itemWeather" value="cold" class="rounded accent-neutral-900">
+              <span>❄️ Frio</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 border border-stone-200 rounded-lg cursor-pointer hover:bg-stone-50">
+              <input type="checkbox" name="itemWeather" value="rainy" class="rounded accent-neutral-900">
+              <span>🌧️ Chuva</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Foto da Peça (Upload ou URL ou Presets) -->
+        <div>
+          <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Foto da Peça</label>
+          
+          <!-- Abas de seleção de imagem -->
+          <div class="flex gap-2 mb-2 text-xs">
+            <button type="button" id="imgTabUpload" class="px-3 py-1 bg-neutral-900 text-white rounded-lg font-medium">Enviar Foto</button>
+            <button type="button" id="imgTabUrl" class="px-3 py-1 bg-stone-100 text-stone-700 hover:bg-stone-200 rounded-lg font-medium">Link / URL</button>
+            <button type="button" id="imgTabPreset" class="px-3 py-1 bg-stone-100 text-stone-700 hover:bg-stone-200 rounded-lg font-medium">Modelos Prontos</button>
+          </div>
+
+          <!-- Opção 1: Upload Arquivo -->
+          <div id="imgSectionUpload" class="space-y-2">
+            <input type="file" id="itemImageFile" accept="image/*" class="w-full text-xs text-stone-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-neutral-900 file:text-white hover:file:bg-neutral-800 transition">
+            <p class="text-[11px] text-stone-400">Suporta fotos tiradas na câmera do celular ou salvas no computador (otimizadas automaticamente).</p>
+          </div>
+
+          <!-- Opção 2: URL de Imagem -->
+          <div id="imgSectionUrl" class="hidden">
+            <input type="url" id="itemImageUrl" placeholder="https://exemplo.com/foto-roupa.jpg" class="w-full text-xs border border-stone-300 rounded-xl px-3 py-2 outline-none focus:border-neutral-900">
+          </div>
+
+          <!-- Opção 3: Presets de Imagem -->
+          <div id="imgSectionPreset" class="hidden">
+            <div class="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto p-1 border border-stone-200 rounded-xl" id="presetImagesList">
+              <!-- Renderizado via JS -->
+            </div>
+          </div>
+
+          <!-- Preview da Imagem Selecionada -->
+          <div class="mt-3 flex items-center gap-3 p-2 bg-stone-50 rounded-xl border border-stone-200" id="imagePreviewContainer">
+            <img id="itemImagePreview" src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80" alt="Preview" class="w-14 h-14 rounded-lg object-cover bg-stone-200">
+            <div class="text-xs text-stone-500">
+              <span class="font-semibold text-neutral-800 block">Pré-visualização da Foto</span>
+              <span class="text-[11px]">Como a peça aparecerá no guarda-roupa e looks</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões de Ação do Modal -->
+        <div class="pt-4 border-t border-stone-100 flex justify-end gap-2.5">
+          <button type="button" id="cancelModalBtn" class="px-4 py-2.5 text-xs font-semibold text-stone-600 hover:bg-stone-100 rounded-xl transition">Cancelar</button>
+          <button type="submit" id="saveItemSubmitBtn" class="px-5 py-2.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 rounded-xl shadow-sm transition active:scale-95">Salvar Peça</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CONFIRMAÇÃO MODERNA (SUBSTITUTO DE CONFIRM/ALERT) -->
+  <!-- ======================================================== -->
+  <div id="confirmModal" class="fixed inset-0 bg-neutral-950/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50 modal-backdrop">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-stone-200 modal-content-anim text-center">
+      <div class="w-12 h-12 rounded-full bg-stone-100 text-neutral-900 flex items-center justify-center mx-auto mb-4 text-xl" id="confirmModalIcon">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 class="text-base font-bold text-neutral-900" id="confirmModalTitle">Confirmação</h3>
+      <p class="text-xs text-stone-500 mt-2 mb-6" id="confirmModalMessage">Você tem certeza que deseja executar esta ação?</p>
+      <div class="flex gap-2">
+        <button id="confirmModalCancelBtn" class="flex-1 py-2.5 text-xs font-semibold text-stone-600 hover:bg-stone-100 rounded-xl border border-stone-200 transition">Cancelar</button>
+        <button id="confirmModalOkBtn" class="flex-1 py-2.5 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 rounded-xl transition shadow-sm">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="bg-neutral-950 text-stone-400 text-xs py-6 border-t border-neutral-800 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 text-center sm:flex sm:justify-between sm:items-center">
+      <p class="tracking-wide">Meu Look Diário • Cápsula Minimalista & Smart Casual</p>
+      <p class="text-[11px] text-stone-500 mt-2 sm:mt-0">Todos os dados salvos localmente com total privacidade no seu navegador.</p>
+    </div>
+  </footer>
+
+  <!-- App Scripts via ES Modules -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

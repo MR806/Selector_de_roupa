@@ -1,0 +1,13 @@
+{
+  "name": "meu-look-diario",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Webapp de gerenciamento de guarda-roupa inteligente e gerador de looks minimalistas / smart casual",
+  "scripts": {
+    "dev": "npx -y serve . -p 3000",
+    "start": "npx -y serve . -p 3000"
+  },
+  "keywords": ["fashion", "wardrobe", "capsule-wardrobe", "smart-casual", "minimalist"],
+  "author": "",
+  "license": "MIT"
+}
